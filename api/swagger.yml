@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: TP1 - DNS over HTTPS
+  description: Documentación del TP1 de la materia 75.43 Introducción a Sistemas Distribuidos
+
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor de desarrollo
+
+# Paths servidos por la aplicación
+paths:
+  /domains/{domain}:
+    get:
+      operationId: "api.domains.obtain_ip"
+      tags:
+        - "Domains"
+      summary: "Obtención de IP a partir de un dominio"
+      description: "Obtiene la IP asociada a un dominio en particular, pudiendo ser este un custom domain creado previamente"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: El dominio del cual se quiere obtener una IP
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        404:
+          description: "Dominio no encontrado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'      
+  /custom-domains:
+    post:
+      operationId: "api.domains.create"
+      tags:
+        - "Domains"
+      summary: "Alta de un custom domain en el sistema"
+      description: "Crea una entrada para sobreescribir la IP de un dominio en particular"
+      requestBody:
+        required: true
+        x-body-name: 'domain'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputDomain'
+      responses:
+        201:
+          description: "Se creo el custom domain correctamente"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        400:
+          description: "Custom domain duplicado o request mal formado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'  
+    get:
+      operationId: "api.domains.obtain_all"  
+      tags:
+        - "Domains"
+      summary: "Colección de custom domains del sistema"
+      description: "Obtiene la lista de todos los custom domains del sistema"
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+          description: El filtro de custom domains
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+          content:
+            application/json:
+              schema:
+                type: array
+                $ref: '#/components/schemas/Domain' 
+  /custom-domains/{domain}:
+    put:
+      operationId: "api.domains.edit"
+      tags:
+        - "Domains"
+      summary: "Edición de un custom domain en el sistema"
+      description: "Edita un dominio ya existente en el sistema, sobreescribiendo su ip"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: El dominio del cual se quiere sobreescribir la ip
+      requestBody:
+        required: true
+        x-body-name: 'domain'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputDomain'
+      responses:
+        200:
+          description: "Se edito el custom domain correctamente"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        404:
+          description: "Dominio no existente en el sistema"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'  
+        400:
+          description: "Request mal formado"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 
+    delete:
+      operationId: "api.domains.delete"
+      tags:
+        - "Domains"
+      summary: "Borrado de un custom domain en el sistema"
+      description: "Borra un dominio ya existente en el sistema"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: El dominio que se quiere borrar
+      responses:
+        200:
+          description: "Se borro el custom domain correctamente"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDomain'
+        404:
+          description: "Dominio no existente en el sistema"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'  
+       
+# Declaración de tipos de datos
+components:
+  schemas:
+    Domain:
+      type: "object"
+      properties:
+        domain:
+          type: "string"
+        ip:
+          type: "string"
+        custom:
+          type: "boolean"
+    Error:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+    InputDomain:
+      type: "object"
+      properties:
+        domain:
+          type: "string"
+        ip:
+          type: "string"
+    DeleteDomain:
+      type: "object"
+      properties:
+        domain:
+          type: "string"
+
